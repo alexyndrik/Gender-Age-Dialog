@@ -11,4 +11,16 @@
         <item name="android:statusBarColor">?attr/colorPrimary</item>
         <!-- Customize your theme here. -->
     </style>
+
+    <style name="Title" parent="Widget.AppCompat.TextView">
+        <item name="android:textSize">@dimen/text_size</item>
+        <item name="android:textColor">@color/secondary_gray</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Description" parent="Widget.AppCompat.TextView">
+        <item name="android:textSize">@dimen/text_size</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
+
 </resources>

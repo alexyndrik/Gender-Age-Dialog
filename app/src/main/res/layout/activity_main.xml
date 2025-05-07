@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable name="gender" type="String"/>
+        <variable name="age" type="Integer"/>
+    </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/main"
@@ -10,32 +16,121 @@
         android:background="@color/background_green"
         tools:context=".ui.MainActivity">
 
-        <ImageView
-            android:id="@+id/maleicon"
-            android:layout_width="wrap_content"
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:src="@drawable/maleicon"
-        />
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_margin="@dimen/card_margin"
+            app:cardCornerRadius="18dp">
 
-        <ImageView
-            android:id="@+id/femaleicon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@id/maleicon"
-            android:src="@drawable/femaleicon"
-        />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:paddingTop="@dimen/card_padding_top"
+                android:paddingBottom="@dimen/card_padding_bottom">
 
-        <Button
-            android:id="@+id/button1"
-            app:layout_constraintTop_toBottomOf="@id/femaleicon"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/send"
-        />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/card_padding_horizontal"
+                    android:text="@string/hello"
+                    android:textAlignment="center"
+                    style="@style/Title"
+                />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginHorizontal="@dimen/card_padding_horizontal"
+                    android:text="@string/description"
+                    android:textAlignment="center"
+                    style="@style/Description"
+                />
+
+                <LinearLayout
+                    android:layout_width="202dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginHorizontal="@dimen/gender_age_margin_horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/gender"
+                        android:theme="@style/Description"
+                        android:textStyle="bold"
+                    />
+
+                    <ToggleButton
+                        android:id="@+id/male_btn"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:background="@drawable/toggle_male_selector"
+                        android:textOff=""
+                        android:textOn=""
+                    />
+
+                    <ToggleButton
+                        android:id="@+id/female_btn"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_margin="10dp"
+                        android:background="@drawable/toggle_female_selector"
+                        android:textOff=""
+                        android:textOn=""
+                    />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="202dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginHorizontal="@dimen/gender_age_margin_horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/age"
+                        android:theme="@style/Description"
+                        android:textStyle="bold"
+                    />
+
+                    <androidx.appcompat.widget.AppCompatSpinner
+                        android:id="@+id/ages"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/spinner_background"
+                        android:popupBackground="@drawable/spinner_background"
+                    />
+
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/continue_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/continue_btn"
+                    android:textColor="@color/white"
+                    android:textAllCaps="false"
+                    style="@style/Description"
+                    android:enabled="@{gender != null &amp;&amp; age != null}"
+                />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
