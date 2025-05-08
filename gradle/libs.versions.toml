@@ -13,6 +13,7 @@ constraintlayout = "2.2.0"
 hilt = "2.56.1"
 kapt = "2.1.0"
 lifecycle = "2.4.0"
+datastorePreferencesVersion = "1.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -28,6 +29,7 @@ hilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt
 hilt-compiler = {group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
 androidx-lifecycle-viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 androidx-lifecycle-runtime = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferencesVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

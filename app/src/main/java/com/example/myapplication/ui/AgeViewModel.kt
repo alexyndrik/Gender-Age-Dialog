@@ -1,22 +1,27 @@
 package com.example.myapplication.ui
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.data.model.Age
+import com.example.myapplication.data.repository.AgeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AgeViewModel @Inject constructor() : ViewModel() {
+class AgeViewModel @Inject constructor(
+    private val repository: AgeRepository
+) : ViewModel() {
 
-    private val _age = MutableLiveData<Int?>()
-    val age: LiveData<Int?> = _age
+    val age: StateFlow<Age?> = repository.ageFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    fun setAge(age: Int?) {
+    fun selectAge(age: Age?) {
         viewModelScope.launch {
-            _age.value = age
+            repository.saveAge(age)
         }
     }
 

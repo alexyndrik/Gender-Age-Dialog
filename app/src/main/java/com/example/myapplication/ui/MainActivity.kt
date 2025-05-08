@@ -11,11 +11,15 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.lifecycleScope
 import com.example.myapplication.R
+import com.example.myapplication.data.model.Age
+import com.example.myapplication.data.model.Gender
 import com.example.myapplication.databinding.ActivityMainBinding
 import com.example.myapplication.databinding.SpinnerDropdownItemBindingImpl
 import com.example.myapplication.network.SocketManager
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 private const val SERVER_ADDRESS = "challenge.ciliz.com"
 private const val SERVER_PORT = 2222
@@ -25,6 +29,8 @@ class MainActivity : AppCompatActivity() {
 
     private val socketManager = SocketManager(SERVER_ADDRESS, SERVER_PORT)
     private lateinit var binding: ActivityMainBinding
+
+    private val ageList = ArrayList<String>((16..30).map { it.toString() })
 
     private val genderViewModel: GenderViewModel by viewModels()
     private val ageViewModel: AgeViewModel by viewModels()
@@ -38,8 +44,6 @@ class MainActivity : AppCompatActivity() {
         initGenderButtons()
         initAgesSpinner()
 
-        genderViewModel.gender.observe(this) { binding.gender = it }
-        ageViewModel.age.observe(this) { binding.age = it}
         allowedViewModel.allowed.observe(this) {
             Toast.makeText(this, "allowed: $it", Toast.LENGTH_SHORT).show()
         }
@@ -50,29 +54,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initGenderButtons() {
-        binding.maleBtn.setOnCheckedChangeListener { buttonView, isChecked ->
-            if (isChecked) {
-                binding.femaleBtn.isChecked = false
-                genderViewModel.setGender("m")
-            } else genderViewModel.setGender(null)
+        lifecycleScope.launch {
+            genderViewModel.gender.collect { gender ->
+                binding.maleBtn.isChecked = gender == Gender.MALE
+                binding.femaleBtn.isChecked = gender == Gender.FEMALE
+                binding.gender = gender?.value
+            }
         }
 
-        binding.femaleBtn.setOnCheckedChangeListener { buttonView, isChecked ->
-            if (isChecked) {
-                binding.maleBtn.isChecked = false
-                genderViewModel.setGender("f")
-            } else genderViewModel.setGender(null)
-        }
+        binding.maleBtn.setOnClickListener { genderViewModel.selectGender(if (binding.maleBtn.isChecked) Gender.MALE else null) }
+        binding.femaleBtn.setOnClickListener { genderViewModel.selectGender(if (binding.femaleBtn.isChecked) Gender.FEMALE else null) }
     }
 
     private fun initAgesSpinner() {
-        val ages = ArrayList<String>()
-        ages.add("--")
-        for (i in 16..30) ages.add(i.toString())
-        val aa = object : ArrayAdapter<String>(this, R.layout.spinner_selected_item, R.id.spinner_text, ages) {
+        ageList.add(0, "--")
+
+        val aa = object : ArrayAdapter<String>(this, R.layout.spinner_selected_item, R.id.spinner_text, ageList) {
             override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
                 val view = SpinnerDropdownItemBindingImpl.inflate(LayoutInflater.from(context))
-                view.dropdownText.text = getItem(position)
+                view.dropdownText.text = getItem(position).toString()
                 view.isSelected = binding.ages.selectedItemPosition == position
                 view.isFirst = position == 0
                 return view.root
@@ -85,12 +85,22 @@ class MainActivity : AppCompatActivity() {
             setSelection(0, false)
             onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                    ageViewModel.setAge(if (position == 0) null else ages[position].toInt())
+                    ageViewModel.selectAge(if (position == 0) null else Age(ageList[position].toInt()))
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>) {}
             }
             gravity = Gravity.CENTER
+        }
+
+        lifecycleScope.launch {
+            ageViewModel.age.collect { savedAge ->
+                savedAge?.let {
+                    val index = ageList.indexOfFirst { it == savedAge.value.toString() }
+                    if (index >= 0) binding.ages.setSelection(index)
+                }
+                binding.age = savedAge?.value
+            }
         }
     }
 

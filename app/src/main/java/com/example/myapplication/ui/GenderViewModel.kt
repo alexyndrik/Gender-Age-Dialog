@@ -1,22 +1,27 @@
 package com.example.myapplication.ui
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.data.model.Gender
+import com.example.myapplication.data.repository.GenderRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class GenderViewModel @Inject constructor() : ViewModel() {
+class GenderViewModel @Inject constructor(
+    private val repository: GenderRepository
+) : ViewModel() {
 
-    private val _gender = MutableLiveData<String?>()
-    val gender: LiveData<String?> = _gender
+    val gender: StateFlow<Gender?> = repository.genderFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    fun setGender(gender: String?) {
+    fun selectGender(gender: Gender?) {
         viewModelScope.launch {
-            _gender.value = gender
+            repository.saveGender(gender)
         }
     }
 
