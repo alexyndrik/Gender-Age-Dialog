@@ -13,27 +13,20 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import com.example.myapplication.R
-import com.example.myapplication.data.model.Age
-import com.example.myapplication.data.model.Gender
+import com.example.myapplication.model.Gender
 import com.example.myapplication.databinding.ActivityMainBinding
 import com.example.myapplication.databinding.SpinnerDropdownItemBindingImpl
-import com.example.myapplication.network.SocketManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-
-private const val SERVER_ADDRESS = "challenge.ciliz.com"
-private const val SERVER_PORT = 2222
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
-    private val socketManager = SocketManager(SERVER_ADDRESS, SERVER_PORT)
     private lateinit var binding: ActivityMainBinding
 
     private val ageList = ArrayList<String>((16..30).map { it.toString() })
 
-    private val genderViewModel: GenderViewModel by viewModels()
-    private val ageViewModel: AgeViewModel by viewModels()
+    private val userViewModel: UserViewModel by viewModels()
     private val allowedViewModel: AllowedViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,26 +37,34 @@ class MainActivity : AppCompatActivity() {
         initGenderButtons()
         initAgesSpinner()
 
+        lifecycleScope.launch {
+            userViewModel.userPreferences.collect { prefs ->
+                prefs.gender.let { savedGender ->
+                    binding.maleBtn.isChecked = savedGender == Gender.MALE
+                    binding.femaleBtn.isChecked = savedGender == Gender.FEMALE
+                    binding.gender = savedGender?.value
+                }
+
+                prefs.age.let { savedAge ->
+                    val index = ageList.indexOfFirst { it == savedAge.toString() }
+                    if (index >= 0) binding.ages.setSelection(index)
+                    binding.age = savedAge
+                }
+            }
+        }
+
         allowedViewModel.allowed.observe(this) {
             Toast.makeText(this, "allowed: $it", Toast.LENGTH_SHORT).show()
         }
 
         binding.continueBtn.setOnClickListener {
-            allowedViewModel.getAllowed(socketManager, binding.gender!!, binding.age!!)
+            allowedViewModel.getAllowed(binding.gender!!, binding.age!!)
         }
     }
 
     private fun initGenderButtons() {
-        lifecycleScope.launch {
-            genderViewModel.gender.collect { gender ->
-                binding.maleBtn.isChecked = gender == Gender.MALE
-                binding.femaleBtn.isChecked = gender == Gender.FEMALE
-                binding.gender = gender?.value
-            }
-        }
-
-        binding.maleBtn.setOnClickListener { genderViewModel.selectGender(if (binding.maleBtn.isChecked) Gender.MALE else null) }
-        binding.femaleBtn.setOnClickListener { genderViewModel.selectGender(if (binding.femaleBtn.isChecked) Gender.FEMALE else null) }
+        binding.maleBtn.setOnClickListener { userViewModel.updateGender(if (binding.maleBtn.isChecked) Gender.MALE else null) }
+        binding.femaleBtn.setOnClickListener { userViewModel.updateGender(if (binding.femaleBtn.isChecked) Gender.FEMALE else null) }
     }
 
     private fun initAgesSpinner() {
@@ -85,22 +86,12 @@ class MainActivity : AppCompatActivity() {
             setSelection(0, false)
             onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                    ageViewModel.selectAge(if (position == 0) null else Age(ageList[position].toInt()))
+                    userViewModel.updateAge(if (position == 0) null else ageList[position].toInt())
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>) {}
             }
             gravity = Gravity.CENTER
-        }
-
-        lifecycleScope.launch {
-            ageViewModel.age.collect { savedAge ->
-                savedAge?.let {
-                    val index = ageList.indexOfFirst { it == savedAge.value.toString() }
-                    if (index >= 0) binding.ages.setSelection(index)
-                }
-                binding.age = savedAge?.value
-            }
         }
     }
 

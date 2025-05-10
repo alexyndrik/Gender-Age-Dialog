@@ -17,12 +17,12 @@ class AllowedViewModel @Inject constructor() : ViewModel() {
     private val _allowed = MutableLiveData<Boolean>()
     val allowed: LiveData<Boolean> = _allowed
 
-    fun getAllowed(socketManager: SocketManager, gender: String, age: Int) {
+    fun getAllowed(gender: String, age: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            socketManager.connect()
-            socketManager.send(TestRequest(gender, age))
-            _allowed.postValue(socketManager.receive().allowed)
-            socketManager.close()
+            SocketManager.connect()
+            SocketManager.send(TestRequest(gender, age))
+            _allowed.postValue(SocketManager.receive().allowed)
+            SocketManager.close()
         }
     }
 

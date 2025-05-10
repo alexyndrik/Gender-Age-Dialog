@@ -8,15 +8,15 @@ import java.nio.ByteBuffer
 
 private const val TAG = "SocketManager"
 
-class SocketManager(
-    private val address: String,
-    private val port: Int
-) {
+object SocketManager {
+
+    private const val SERVER_ADDRESS = "challenge.ciliz.com"
+    private const val SERVER_PORT = 2222
+
     private var socket: Socket? = null
 
     fun connect() {
-        socket = Socket(address, port)
-
+        if (socket == null) socket = Socket(SERVER_ADDRESS, SERVER_PORT)
         Log.d(TAG, "connected: ${socket?.isConnected}")
     }
 
