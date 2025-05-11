@@ -52,7 +52,7 @@
                 />
 
                 <LinearLayout
-                    android:layout_width="202dp"
+                    android:layout_width="@dimen/gender_age_width"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
@@ -70,8 +70,8 @@
 
                     <ToggleButton
                         android:id="@+id/male_btn"
-                        android:layout_width="50dp"
-                        android:layout_height="50dp"
+                        android:layout_width="@dimen/gender_size"
+                        android:layout_height="@dimen/gender_size"
                         android:background="@drawable/toggle_male_selector"
                         android:textOff=""
                         android:textOn=""
@@ -79,8 +79,8 @@
 
                     <ToggleButton
                         android:id="@+id/female_btn"
-                        android:layout_width="50dp"
-                        android:layout_height="50dp"
+                        android:layout_width="@dimen/gender_size"
+                        android:layout_height="@dimen/gender_size"
                         android:layout_margin="10dp"
                         android:background="@drawable/toggle_female_selector"
                         android:textOff=""
@@ -90,7 +90,7 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:layout_width="202dp"
+                    android:layout_width="@dimen/gender_age_width"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"

@@ -7,6 +7,8 @@
     <dimen name="card_padding_horizontal">17dp</dimen>
 
     <dimen name="gender_age_margin_horizontal">46dp</dimen>
+    <dimen name="gender_age_width">202dp</dimen>
+    <dimen name="gender_size">50dp</dimen>
 
     <dimen name="text_size">14sp</dimen>
 
