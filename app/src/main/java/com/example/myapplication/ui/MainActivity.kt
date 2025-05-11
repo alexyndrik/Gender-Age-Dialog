@@ -1,21 +1,23 @@
 package com.example.myapplication.ui
 
+import android.content.res.Resources
+import android.graphics.Color
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
+import android.widget.PopupWindow
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.drawable.toDrawable
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.R
-import com.example.myapplication.model.Gender
 import com.example.myapplication.databinding.ActivityMainBinding
-import com.example.myapplication.databinding.SpinnerDropdownItemBindingImpl
+import com.example.myapplication.model.Gender
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -24,7 +26,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    private val ageList = ArrayList<String>((16..30).map { it.toString() })
+    private val ageList = (16..30).map { it }
 
     private val userViewModel: UserViewModel by viewModels()
     private val allowedViewModel: AllowedViewModel by viewModels()
@@ -33,9 +35,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-
-        initGenderButtons()
-        initAgesSpinner()
 
         lifecycleScope.launch {
             userViewModel.userPreferences.collect { prefs ->
@@ -46,8 +45,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 prefs.age.let { savedAge ->
-                    val index = ageList.indexOfFirst { it == savedAge.toString() }
-                    if (index >= 0) binding.ages.setSelection(index)
+                    binding.ages.spinnerText.text = savedAge?.toString() ?: "--"
                     binding.age = savedAge
                 }
             }
@@ -57,42 +55,45 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "allowed: $it", Toast.LENGTH_SHORT).show()
         }
 
+        binding.maleBtn.setOnClickListener { userViewModel.updateGender(if (binding.maleBtn.isChecked) Gender.MALE else null) }
+        binding.femaleBtn.setOnClickListener { userViewModel.updateGender(if (binding.femaleBtn.isChecked) Gender.FEMALE else null) }
+
+        binding.ages.root.setOnClickListener { showAgePopup(binding.ages.root, binding.age) }
+
         binding.continueBtn.setOnClickListener {
             allowedViewModel.getAllowed(binding.gender!!, binding.age!!)
         }
     }
 
-    private fun initGenderButtons() {
-        binding.maleBtn.setOnClickListener { userViewModel.updateGender(if (binding.maleBtn.isChecked) Gender.MALE else null) }
-        binding.femaleBtn.setOnClickListener { userViewModel.updateGender(if (binding.femaleBtn.isChecked) Gender.FEMALE else null) }
-    }
+    private fun showAgePopup(anchor: View, selectedAge: Int?) {
+        val popupView = LayoutInflater.from(this).inflate(R.layout.popup_age_list, null)
+        val recyclerView = popupView.findViewById<RecyclerView>(R.id.recyclerView)
 
-    private fun initAgesSpinner() {
-        ageList.add(0, "--")
+        val itemHeightInDp = 30
+        val popupHeightInPx = ((itemHeightInDp * 6 + 16) * Resources.getSystem().displayMetrics.density).toInt()
 
-        val aa = object : ArrayAdapter<String>(this, R.layout.spinner_selected_item, R.id.spinner_text, ageList) {
-            override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
-                val view = SpinnerDropdownItemBindingImpl.inflate(LayoutInflater.from(context))
-                view.dropdownText.text = getItem(position).toString()
-                view.isSelected = binding.ages.selectedItemPosition == position
-                view.isFirst = position == 0
-                return view.root
-            }
+        val popupWindow = PopupWindow(popupView, anchor.width, popupHeightInPx, true)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+        val adapter = AgeAdapter(ageList, selectedAge) {
+            userViewModel.updateAge(it)
+            popupWindow.dismiss()
         }
-        aa.setDropDownViewResource(R.layout.spinner_dropdown_item)
+        recyclerView.adapter = adapter
 
-        with(binding.ages) {
-            adapter = aa
-            setSelection(0, false)
-            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                    userViewModel.updateAge(if (position == 0) null else ageList[position].toInt())
-                }
+        val firstPosition = ageList.indexOf(selectedAge) - 2
+        recyclerView.scrollToPosition(firstPosition)
 
-                override fun onNothingSelected(parent: AdapterView<*>) {}
-            }
-            gravity = Gravity.CENTER
-        }
+        popupWindow.elevation = 10f
+        popupWindow.setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
+        popupWindow.isOutsideTouchable = true
+
+        val location = IntArray(2)
+        anchor.getLocationOnScreen(location)
+        val anchorX = location[0]
+        val anchorY = location[1]
+        val dy = (8 * Resources.getSystem().displayMetrics.density).toInt()
+        popupWindow.showAtLocation(anchor, Gravity.NO_GRAVITY, anchorX, anchorY - dy)
     }
 
 }
